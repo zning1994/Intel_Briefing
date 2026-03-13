@@ -15,7 +15,7 @@ load_dotenv()
 XAI_API_KEY = os.getenv("XAI_API_KEY")
 # Default to official endpoint, but allow override for Relay Services (中转站)
 XAI_BASE_URL = os.getenv("XAI_BASE_URL", "https://api.x.ai/v1/chat/completions")
-MODEL_NAME = os.getenv("XAI_MODEL", "grok-beta")  # Relay users: set to 'grok-3' or 'grok-4'
+MODEL_NAME = os.getenv("XAI_MODEL", "grok-3-mini")
 
 def fetch_grok_intel(query: str, override_prompt: str = None) -> str:
     """
