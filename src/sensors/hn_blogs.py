@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import List, Optional
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 import ssl
 
 logger = logging.getLogger(__name__)
@@ -128,7 +129,7 @@ def parse_rss_feed(feed_content: str, source_title: str) -> List[BlogArticle]:
                 
                 title_text = title.text if title is not None and title.text else "Untitled"
                 link_href = link.get('href', '') if link is not None else ""
-                pub_text = published.text[:10] if published is not None and published.text else ""
+                pub_text = published.text.strip() if published is not None and published.text else ""
                 content_text = _strip_html(summary.text) if summary is not None and summary.text else ""
                 
                 if title_text and link_href:
@@ -152,7 +153,7 @@ def parse_rss_feed(feed_content: str, source_title: str) -> List[BlogArticle]:
                 
                 title_text = title.text if title is not None and title.text else "Untitled"
                 link_text = link.text if link is not None and link.text else ""
-                pub_text = pub_date.text[:16] if pub_date is not None and pub_date.text else ""
+                pub_text = pub_date.text.strip() if pub_date is not None and pub_date.text else ""
                 content_text = _strip_html(description.text) if description is not None and description.text else ""
                 
                 if title_text and link_text:
@@ -211,11 +212,17 @@ def fetch_hn_blogs(limit: int = 5) -> List[BlogArticle]:
             logger.debug(f"[{i+1}/{len(blogs_to_fetch)}] {blog['title']}: failed")
     
     # 3. Sort by date and return top N
-    # Note: Date parsing is best-effort
     def parse_date(article):
+        if not article.pub_date:
+            return datetime.min
+        # Try RFC 2822 first (RSS 2.0: "Sat, 14 Mar 2026 ...")
         try:
-            if article.pub_date:
-                return datetime.fromisoformat(article.pub_date.replace('Z', '+00:00'))
+            return parsedate_to_datetime(article.pub_date).replace(tzinfo=None)
+        except (ValueError, TypeError, AttributeError):
+            pass
+        # Then try ISO format (Atom: "2026-03-14")
+        try:
+            return datetime.fromisoformat(article.pub_date.replace('Z', '+00:00')).replace(tzinfo=None)
         except (ValueError, TypeError, AttributeError):
             pass
         return datetime.min
