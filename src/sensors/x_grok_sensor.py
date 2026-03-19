@@ -37,37 +37,62 @@ def fetch_grok_intel(query: str, override_prompt: str = None) -> str:
     year_str = datetime.datetime.now().strftime("%Y")
 
     if override_prompt:
-        system_content = f"You are an specialized Data Analyst. Current Date: {today_str}. Follow the user's instructions strictly."
+        system_content = f"You are a specialized Data Analyst. Current Date: {today_str}. Follow the user's instructions strictly."
         user_content = override_prompt
     else:
         system_content = (
-            f"You are a Commercial Intelligence Analyst. **CURRENT DATE: {today_str}**. "
-            "Your goal is to find high-signal discussions from the **LAST 24 HOURS ONLY**. "
-            f"❌ CRITICAL RULE: Do NOT report events from {int(year_str)-2} or {int(year_str)-1} as 'new'. "
-            "If the trend is from 2024/2025, explicitly label it as 'Historical Context'. "
-            "**IMPORTANT: You must answer in Simplified Chinese (简体中文).**"
+            f"You are an AI industry intelligence analyst monitoring X (Twitter). "
+            f"**CURRENT DATE: {today_str}**.\n\n"
+            "## Your mission\n"
+            "Find HIGH-SIGNAL events from the **LAST 24 HOURS** on X about global AI developments.\n\n"
+            "## What counts as high-signal\n"
+            "- Funding rounds, acquisitions, IPO news (any size)\n"
+            "- Major product launches or updates (models, APIs, tools)\n"
+            "- Key personnel moves (hires, departures, founder drama)\n"
+            "- Industry controversies, debates, or policy shifts\n"
+            "- Surprising demos, benchmarks, or breakthroughs\n"
+            "- Startup announcements from builders of any scale\n\n"
+            "## What to SKIP\n"
+            "- Generic AI opinions, thought-leader platitudes\n"
+            "- Recycled news already covered by HN/ArXiv/Product Hunt\n"
+            "- Promotional threads with no substance\n\n"
+            "## Rules\n"
+            f"- ❌ Do NOT report events from {int(year_str)-2} or {int(year_str)-1} as new. "
+            "If referencing older context, label it explicitly as '历史背景'.\n"
+            "- Each item MUST include at least one @handle or paraphrased tweet as source.\n"
+            "- 直接输出结果，不要写分析过程说明或开场白。\n"
+            "- 用简体中文回答。\n\n"
+            "## Output format (strict)\n"
+            "For each event, use this format:\n\n"
+            "### {事件标题}\n"
+            "- **信号类型**: 融资/产品/人事/争议/技术/政策\n"
+            "- **关键人物/公司**: ...\n"
+            "- **来源**: @handle 说了什么 (paraphrase)\n"
+            "- **影响评估**: 一句话说明为什么值得关注\n\n"
+            "Report 5-8 items, sorted by impact. If fewer than 3 genuine events found, "
+            "say '过去24小时X平台无重大AI动态' and stop."
         )
-        user_content = f"Search X for the latest trends about '{query}' happened in {year_str}. Focus on specific recent events. Reply in Chinese."
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {XAI_API_KEY}"
-    }
+        user_content = (
+            f"Search X for the latest AI industry developments from the past 24 hours ({today_str}). "
+            f"Cover: AI technology breakthroughs, startup funding & products, "
+            f"industry moves & drama, China AI ecosystem, global AI policy. "
+            f"Focus on {year_str} events only."
+        )
 
     payload = {
         "model": MODEL_NAME,
         "messages": [
             {
-                "role": "system", 
+                "role": "system",
                 "content": system_content
             },
             {
-                "role": "user", 
+                "role": "user",
                 "content": user_content
             }
         ],
         "stream": False,
-        "temperature": 0.5
+        "temperature": 0.3
     }
 
     try:

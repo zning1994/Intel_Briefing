@@ -204,7 +204,7 @@ def _fetch_grok_social() -> List[Dict]:
         return []
     social = []
     try:
-        grok_report = fetch_grok_intel("AI Agents, LLM, Tech Startups")
+        grok_report = fetch_grok_intel("AI industry: funding, products, breakthroughs, drama")
         if grok_report and "Error" not in grok_report:
             validated_report = validate_grok_report(grok_report)
             social.append({
