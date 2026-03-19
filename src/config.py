@@ -37,7 +37,7 @@ PRODUCTHUNT_TOKEN = os.getenv("PRODUCTHUNT_TOKEN")
 
 # --- API Endpoints ---
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models"
-GEMINI_MODEL = "gemini-2.5-flash-lite"
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 XAI_BASE_URL = os.getenv("XAI_BASE_URL", "https://api.x.ai/v1/chat/completions")
 XAI_MODEL = os.getenv("XAI_MODEL", "grok-3-mini")
 GITHUB_API_URL = "https://api.github.com/graphql"
