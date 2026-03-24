@@ -50,7 +50,7 @@ def generate_report(intel: dict, date_str: str) -> str:
         f"# 🌐 全球情报日报 (Global Intel Briefing)",
         f"**日期:** {date_str}",
         f"**生成时间:** {datetime.now().strftime('%H:%M')}",
-        f"**数据源:** HN, GitHub, 36Kr, WallStreetCN, V2EX, PH, ArXiv, X, XHS",
+        f"**数据源:** HN, GitHub, 36Kr, WallStreetCN, V2EX, PH, ArXiv, X",
         "",
         "---",
         ""
@@ -184,21 +184,6 @@ def generate_report(intel: dict, date_str: str) -> str:
     else:
         lines.append("*暂无数据*\n")
 
-    # --- XHS Directives ---
-    lines.append("## 📕 小红书雷达 (XHS Radar)")
-    lines.append("> 手动搜索指令 (点击链接进入搜索页)\n")
-
-    if intel.get("xhs_directives"):
-        for i, item in enumerate(intel["xhs_directives"][:6], 1):
-            title = item.get("title", "")
-            url = item.get("url", "#")
-            summary = item.get("summary", "")
-
-            lines.append(f"### {i}. [{title}]({url})")
-            lines.append(f"> {summary[:80]}...")
-            lines.append("")
-    else:
-        lines.append("*XHS 传感器不可用*\n")
 
     # --- Insights (HN Top Blogs) ---
     lines.append("## 💡 深度洞察 (Insights)")

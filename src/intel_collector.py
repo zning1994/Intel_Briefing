@@ -45,7 +45,6 @@ except ImportError as e:
 PH_AVAILABLE = False
 ARXIV_AVAILABLE = False
 GROK_AVAILABLE = False
-XHS_AVAILABLE = False
 HN_BLOGS_AVAILABLE = False
 VERIFIER_AVAILABLE = False
 
@@ -67,11 +66,6 @@ try:
 except ImportError:
     logger.info("Grok (X/Twitter) sensor not available, skipping.")
 
-try:
-    from sensors.xhs_radar import XHSRadar
-    XHS_AVAILABLE = True
-except ImportError:
-    logger.info("XHS (Xiaohongshu) sensor not available, skipping.")
 
 try:
     from sensors.hn_blogs import fetch_hn_blogs
@@ -217,21 +211,6 @@ def _fetch_grok_social() -> List[Dict]:
     return social
 
 
-def _fetch_xhs() -> List[Dict]:
-    if not XHS_AVAILABLE:
-        return []
-    directives = []
-    try:
-        radar = XHSRadar()
-        leads = radar.fetch_leads()
-        for lead in leads[:8]:
-            directives.append({
-                "source": "小红书", "category": "XHS",
-                "title": lead.title, "url": lead.url, "summary": lead.summary,
-            })
-    except Exception as e:
-        logger.warning(f"XHS failed: {e}")
-    return directives
 
 
 def _fetch_hn_blogs(limit: int) -> List[Dict]:
@@ -278,7 +257,6 @@ def fetch_all_sources(limit_per_source: int = 10) -> dict:
         future_ph = executor.submit(_fetch_product_hunt, limit_per_source)
         future_arxiv = executor.submit(_fetch_arxiv, limit_per_source)
         future_social = executor.submit(_fetch_grok_social)
-        future_xhs = executor.submit(_fetch_xhs)
         future_blogs = executor.submit(_fetch_hn_blogs, 5)
 
         try:
@@ -297,7 +275,6 @@ def fetch_all_sources(limit_per_source: int = 10) -> dict:
         ph_data = _safe_result(future_ph, "Product Hunt")
         arxiv_data = _safe_result(future_arxiv, "ArXiv")
         social_data = _safe_result(future_social, "Grok Social")
-        xhs_data = _safe_result(future_xhs, "XHS")
         blog_data = _safe_result(future_blogs, "HN Blogs")
 
     intel = {
@@ -307,7 +284,6 @@ def fetch_all_sources(limit_per_source: int = 10) -> dict:
         "community": _dedup_items(external.get("community", [])),
         "research": arxiv_data,
         "social": social_data,
-        "xhs_directives": xhs_data,
         "insights": blog_data,
     }
 
