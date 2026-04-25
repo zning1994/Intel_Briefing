@@ -153,20 +153,23 @@ def _fetch_product_hunt(limit: int) -> List[Dict]:
                 "heat": f"{p.votes_count} votes", "time": "Today",
                 "tagline": p.tagline, "grok_review": None,
             }
-            if GROK_AVAILABLE and i < 3:
-                logger.info(f"Grok sentiment check: {p.name}...")
-                try:
-                    grok_prompt = (
-                        f'You are an X (Twitter) analyst. Search X for the product "{p.name}" '
-                        f'with tagline "{p.tagline}". Provide a market sentiment summary in '
-                        f'Simplified Chinese, including: 1. Overall sentiment 2. 3-5 key findings '
-                        f'3. Pros and Cons. Keep it concise. If no data, say "暂无X平台讨论数据".'
-                    )
-                    grok_result = fetch_grok_intel(f"PH: {p.name}", override_prompt=grok_prompt)
-                    if grok_result and "Error" not in grok_result:
-                        product_data["grok_review"] = grok_result
-                except Exception as e:
-                    logger.warning(f"Grok failed for {p.name}: {e}")
+            # Disabled: per-product Grok X-sentiment uses deprecated Live Search
+            # on chat completions, billed per source ($0.025 each). Re-enable only
+            # after migrating to Responses API + x_search tool.
+            # if GROK_AVAILABLE and i < 3:
+            #     logger.info(f"Grok sentiment check: {p.name}...")
+            #     try:
+            #         grok_prompt = (
+            #             f'You are an X (Twitter) analyst. Search X for the product "{p.name}" '
+            #             f'with tagline "{p.tagline}". Provide a market sentiment summary in '
+            #             f'Simplified Chinese, including: 1. Overall sentiment 2. 3-5 key findings '
+            #             f'3. Pros and Cons. Keep it concise. If no data, say "暂无X平台讨论数据".'
+            #         )
+            #         grok_result = fetch_grok_intel(f"PH: {p.name}", override_prompt=grok_prompt)
+            #         if grok_result and "Error" not in grok_result:
+            #             product_data["grok_review"] = grok_result
+            #     except Exception as e:
+            #         logger.warning(f"Grok failed for {p.name}: {e}")
             products_data.append(product_data)
     except Exception as e:
         logger.warning(f"Product Hunt failed: {e}")
